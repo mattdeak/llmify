@@ -1,14 +1,45 @@
-pub const SUMMARIZE: &str = "Analyze the text provided and summarize it in your own words. If the text appears to be raw data instead of text, try to infer what the raw data might represent, then analyze and summarize the data. Be analytical and concise. Do not include any of the original text in your response. If the text cannot be summarized, write \"Cannot be summarized\".";
+use std::fmt::Display;
 
-pub fn format_prompt(prompt: &str, task: &str, custom_instructions: &Option<String>) -> String {
-    let mut task = task.to_string();
+pub const SUMMARIZE: &str = r#"Analyze the input provided and summarize it in your own words. 
+If the text appears to be raw data instead of text, try to infer what the raw data might represent, then analyze and summarize the data.
+Be analytical and concise. Do not include any of the original text in your response. If the text cannot be summarized, write "Cannot be summarized"
+The text to summarize will be formatted as:
 
-    if let Some(custom_instructions) = custom_instructions {
-        let formatted_custom_instructions = format!(
-            "\nAdditionally, closely follow these instructions: {}",
+INPUT: [text to summarize]
+"#;
+
+#[derive(Debug)]
+pub struct Prompt {
+    pub prompt: String,
+    pub task: String,
+}
+
+impl Prompt {
+    pub fn new(prompt: &str, task: &str) -> Self {
+        let processed_task = format!("INPUT: {}", task);
+        Self {
+            prompt: prompt.to_string(),
+            task: processed_task,
+        }
+    }
+
+    pub fn with_custom_instructions(prompt: &str, task: &str, custom_instructions: &str) -> Self {
+        let processed_task = format!("INPUT: {}", task);
+        let prompt = format!(
+            "{}\n\nAddtionally, closely follow these instructions: {}",
+            prompt,
             custom_instructions.trim()
         );
-        task.push_str(custom_instructions);
+
+        Self {
+            prompt,
+            task: processed_task,
+        }
     }
-    format!("{}\n\nInput: {}", prompt, task)
+}
+
+impl Display for Prompt {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}\n\nInput: {}", self.prompt, self.task)
+    }
 }

@@ -3,21 +3,21 @@ use serde::{Deserialize, Serialize};
 const OPENAI_API_CHAT_URL: &str = "https://api.openai.com/v1/chat/completions";
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Message {
+pub struct Message {
     pub role: String,
     pub content: String,
 }
 
 #[derive(Debug, Serialize)]
 pub struct OpenAIChatRequest {
-    model: String,
-    messages: Vec<Message>,
+    pub model: String,
+    pub messages: Vec<Message>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    temperature: Option<f64>,
+    pub temperature: Option<f64>,
 }
 
 #[derive(Debug, Deserialize)]
-struct Choice {
+pub struct Choice {
     pub index: usize,
     pub message: Message,
     pub finish_reason: String,
@@ -29,6 +29,15 @@ pub struct OpenAIChatResponse {
     pub object: String,
     pub created: i64,
     pub choices: Vec<Choice>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(tag = "error")]
+pub struct OpenAIErrorResponse {
+    pub message: String,
+    #[serde(rename = "type")]
+    pub error_type: String,
+    pub code: String,
 }
 
 pub struct OpenAIClient {
@@ -48,13 +57,29 @@ impl OpenAIClient {
         let request_body = serde_json::to_string(&request).unwrap();
         let response = client
             .post(OPENAI_API_CHAT_URL)
-            .bearer_auth(self.api_key)
+            .bearer_auth(&self.api_key)
             .header("Content-Type", "application/json")
             .body(request_body)
             .send()
             .unwrap();
 
         let response_body = response.text().unwrap();
-        serde_json::from_str(&response_body).unwrap()
+
+        if let Ok(response) = serde_json::from_str::<OpenAIChatResponse>(&response_body) {
+            response
+        } else {
+            let error_response = serde_json::from_str::<OpenAIErrorResponse>(&response_body)
+                .unwrap_or_else(|_| {
+                    panic!(
+                        "Failed to deserialize error response from OpenAI API: {}",
+                        response_body
+                    )
+                });
+
+            panic!(
+                "Failed to send request to OpenAI API: {}",
+                error_response.message
+            );
+        }
     }
 }

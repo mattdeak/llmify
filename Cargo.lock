@@ -141,6 +141,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "clap-stdin"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3617daa8b997570ed9adb631a57ab10d7a1969fad433950d56e8c24e66ab3aaa"
+dependencies = [
+ "thiserror",
+]
+
+[[package]]
 name = "clap_builder"
 version = "4.3.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -501,6 +510,7 @@ name = "llmify"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "clap-stdin",
  "dotenvy",
  "reqwest",
  "serde",
@@ -867,6 +877,26 @@ dependencies = [
  "redox_syscall",
  "rustix",
  "windows-sys",
+]
+
+[[package]]
+name = "thiserror"
+version = "1.0.44"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "611040a08a0439f8248d1990b111c95baa9c704c805fa1f62104b39655fd7f90"
+dependencies = [
+ "thiserror-impl",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "1.0.44"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "090198534930841fab3a5d1bb637cde49e339654e606195f8d9c76eeb081dc96"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

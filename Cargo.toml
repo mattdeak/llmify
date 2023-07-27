@@ -13,6 +13,7 @@ path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.3.19", features = ["derive"] }
+clap-stdin = "0.2.0"
 dotenvy = "0.15.7"
 reqwest = { version = "0.11.18", features = ["blocking"] }
 serde = { version = "1.0.176", features = ["derive"] }

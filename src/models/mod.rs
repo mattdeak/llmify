@@ -1,8 +1,11 @@
 pub mod openai;
-use std::fmt;
+use crate::prompts::Prompt;
 
-pub trait LanguageModel {
-    fn generate(&self, input: &str) -> f64;
+use super::clients::{OpenAIChatRequest, OpenAIClient};
+use std::{fmt, str::FromStr};
+
+pub trait LanguageModel<T> {
+    fn generate(&self, input: T) -> String;
 }
 
 pub enum OpenAIModel {
@@ -21,33 +24,42 @@ impl fmt::Display for OpenAIModel {
     }
 }
 
-struct OpenAILanguageModel {
-    model_name: OpenAIModel,
-    temperature: f64,
-}
+impl FromStr for OpenAIModel {
+    type Err = ();
 
-impl OpenAILanguageModel {
-    pub fn new(model_name: OpenAIModel) -> Self {
-        Self {
-            model_name,
-            temperature: 0.0,
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "gpt-3.5-turbo" => Ok(OpenAIModel::Gpt3Turbo),
+            "gpt-3.5-turbo-16k" => Ok(OpenAIModel::Gpt3Turbo16k),
+            "gpt-4" => Ok(OpenAIModel::Gpt4),
+            _ => Err(()),
         }
-    }
-
-    pub fn set_temperature(&mut self, temperature: f64) {
-        self.temperature = temperature;
     }
 }
 
-impl LanguageModel for OpenAILanguageModel {
-    fn generate(&self, input: &str) -> f64 {
-        let mut request = openai::OpenAIChatRequest::new(&self.model_name.to_string(), input);
-        request.set_temperature(self.temperature);
-        let response = openai::chat(&request);
-        let mut score = 0.0;
-        for choice in response.choices {
-            score += choice.message.content.len() as f64;
-        }
-        score
+pub struct OpenAILanguageModel<'a> {
+    client: &'a OpenAIClient,
+    pub model_name: OpenAIModel,
+}
+
+impl<'a> OpenAILanguageModel<'a> {
+    pub fn new(client: &'a OpenAIClient, model_name: OpenAIModel) -> Self {
+        Self { client, model_name }
+    }
+}
+
+impl<'a> LanguageModel<&str> for OpenAILanguageModel<'a> {
+    fn generate(&self, input: &str) -> String {
+        let request = OpenAIChatRequest::from_model_and_str(&self.model_name.to_string(), input);
+        let response = self.client.send_chat_request(request);
+        response.get_top_choice()
+    }
+}
+
+impl<'a> LanguageModel<&Prompt> for OpenAILanguageModel<'a> {
+    fn generate(&self, input: &Prompt) -> String {
+        let request = OpenAIChatRequest::from_model_and_prompt(&self.model_name.to_string(), input);
+        let response = self.client.send_chat_request(request);
+        response.get_top_choice()
     }
 }
