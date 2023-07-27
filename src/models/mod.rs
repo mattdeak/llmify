@@ -48,17 +48,19 @@ impl<'a> OpenAILanguageModel<'a> {
     }
 }
 
-impl<'a> LanguageModel<&str> for OpenAILanguageModel<'a> {
-    fn generate(&self, input: &str) -> String {
-        let request = OpenAIChatRequest::from_model_and_str(&self.model_name.to_string(), input);
+impl<'a, S: AsRef<str>> LanguageModel<S> for OpenAILanguageModel<'a> {
+    fn generate(&self, input: S) -> String {
+        let request =
+            OpenAIChatRequest::from_model_and_str(&self.model_name.to_string(), input.as_ref());
         let response = self.client.send_chat_request(request);
         response.get_top_choice()
     }
 }
 
-impl<'a> LanguageModel<&Prompt> for OpenAILanguageModel<'a> {
-    fn generate(&self, input: &Prompt) -> String {
-        let request = OpenAIChatRequest::from_model_and_prompt(&self.model_name.to_string(), input);
+impl<'a> LanguageModel<Prompt> for OpenAILanguageModel<'a> {
+    fn generate(&self, input: Prompt) -> String {
+        let request =
+            OpenAIChatRequest::from_model_and_prompt(&self.model_name.to_string(), &input);
         let response = self.client.send_chat_request(request);
         response.get_top_choice()
     }

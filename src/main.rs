@@ -1,28 +1,36 @@
-use clap::{Parser, ValueEnum};
+use clap::{Parser, Subcommand};
 use clap_stdin::MaybeStdin;
 use dotenvy::dotenv;
 use llmify::{
     clients::OpenAIClient,
     models::{LanguageModel, OpenAILanguageModel},
-    prompts::{Prompt, SUMMARIZE},
+    prompts::{Prompt, QUERY, SUMMARIZE},
 };
 
-#[derive(Debug, Clone, Parser, ValueEnum)]
+#[derive(Debug, Parser, Clone)]
+struct TaskArgs {
+    task: MaybeStdin<String>,
+}
+
+#[derive(Debug, Parser, Clone)]
+struct QAArgs {
+    #[clap(short, long)]
+    question: String,
+    task: MaybeStdin<String>,
+}
+
+#[derive(Debug, Clone, Subcommand)]
 enum Mode {
-    Summarize,
-    QA,
-    Continue,
-    Custom,
+    Summarize(TaskArgs),
+    Ask(QAArgs),
 }
 
 #[derive(Debug, Parser)]
 #[command(author, about, version)]
 struct Cli {
-    #[arg(value_enum)]
+    #[clap(subcommand)]
     task_type: Mode,
     // This is the main task to be performed
-    task: MaybeStdin<String>,
-
     #[clap(short, long, default_value = "gpt-3.5-turbo")]
     model: String,
     #[clap(short, long, default_value = "0.7")]
@@ -32,30 +40,41 @@ struct Cli {
 }
 
 fn main() {
-    let args = Cli::parse();
+    let command = Cli::parse();
     dotenv().ok();
 
     let api_key = std::env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY not set");
     let client = OpenAIClient::new(&api_key);
-    let language_model = OpenAILanguageModel::new(&client, args.model.parse().unwrap());
+    let language_model = OpenAILanguageModel::new(&client, command.model.parse().unwrap());
 
-    match args.task_type {
-        Mode::Summarize => {
-            let prompt = SUMMARIZE;
-            let task = args.task;
-            let custom_instructions = args.custom_instructions;
-            let formatted_prompt = match custom_instructions {
-                Some(instructions) => {
-                    Prompt::with_custom_instructions(prompt, &task, &instructions)
-                }
-                None => Prompt::new(prompt, &task),
-            };
-            dbg!(&formatted_prompt);
-            let response = language_model.generate(&formatted_prompt);
+    match command.task_type {
+        Mode::Summarize(sargs) => {
+            let response = process_task(
+                &language_model,
+                SUMMARIZE,
+                &sargs.task,
+                &command.custom_instructions,
+            );
             println!("{}", response);
         }
-        _ => {
-            unimplemented!();
+        Mode::Ask(qa_args) => {
+            let task = format!("QUESTION: {}\nINPUT: {}", qa_args.question, qa_args.task);
+            let response =
+                process_task(&language_model, QUERY, &task, &command.custom_instructions);
+            println!("{}", response);
         }
     }
+}
+
+fn process_task<'a, T: LanguageModel<Prompt>>(
+    model: &'a T,
+    prompt: &'a str,
+    task: &'a str,
+    custom_instructions: &Option<String>,
+) -> String {
+    let formatted_prompt = custom_instructions.as_ref().map_or_else(
+        || Prompt::new(prompt, task),
+        |instructions| Prompt::with_custom_instructions(prompt, task, instructions),
+    );
+    model.generate(formatted_prompt)
 }

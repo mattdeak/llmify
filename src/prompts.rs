@@ -8,6 +8,15 @@ The text to summarize will be formatted as:
 INPUT: [text to summarize]
 "#;
 
+pub const QUERY: &str = r#"Analyze the input and the user-provided question and answer the question. 
+If the question is unanswerable based on the content of the input, write "Cannot be answered".
+Be clear and concise. 
+
+The formatting of the input will be:
+QUESTION: [text to analyze]
+INPUT: [question to answer]
+"#;
+
 #[derive(Debug)]
 pub struct Prompt {
     pub prompt: String,
