@@ -1,7 +1,5 @@
-mod models;
-mod prompts;
 use clap::{Parser, ValueEnum};
-use prompts::format_prompt;
+use llmify::prompts::format_prompt;
 
 #[derive(Debug, Clone, Parser, ValueEnum)]
 enum Mode {
