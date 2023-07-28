@@ -25,7 +25,7 @@ struct QueryArgs {
 
 #[derive(Debug, Parser, Clone)]
 struct QuestionArgs {
-    question: String,
+    question: MaybeStdin<String>,
 }
 
 #[derive(Debug, Clone, Subcommand)]
