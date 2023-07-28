@@ -1,3 +1,4 @@
+use super::instructions::FormatInstructions;
 use std::{error::Error, fmt::Display};
 
 #[derive(Debug)]
@@ -13,14 +14,14 @@ impl Error for PromptBuilderError {}
 
 pub struct PromptBuilder {
     prefix: Option<String>,
-    formatting_instructions: Option<String>,
+    format_instructions: Option<FormatInstructions>,
     task: Option<String>,
 }
 
 #[derive(Debug)]
 pub struct Prompt {
     pub prefix: String,
-    pub formatting_instructions: Option<String>,
+    pub formatting_instructions: Option<FormatInstructions>,
     pub task: String,
 }
 
@@ -30,8 +31,8 @@ impl PromptBuilder {
         self
     }
 
-    pub fn formatting_instructions(mut self, instructions: &str) -> Self {
-        self.formatting_instructions = Some(instructions.to_string());
+    pub fn formatting_instructions(mut self, instructions: &FormatInstructions) -> Self {
+        self.formatting_instructions = instructions.clone();
         self
     }
 

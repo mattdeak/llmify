@@ -14,3 +14,9 @@ The formatting of the input will be:
 QUESTION: [text to analyze]
 INPUT: [question to answer]
 "#;
+
+pub const SELF_CRITIQUE_FORMATTER: &str = r#"Format your output like so:
+INITIAL: [initial text]
+CRITIQUE: [critique of initial text]
+FINAL: [final text]
+"#;
