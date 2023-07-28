@@ -1,4 +1,4 @@
-use super::instructions::FormatInstructions;
+use super::instructions::BehaviourInstructions;
 
 pub const SUMMARIZE: &str = r#"Analyze the input provided and summarize it in your own words. 
 If the text appears to be raw data instead of text, try to infer what the raw data might represent, then analyze and summarize the data.
@@ -20,8 +20,8 @@ INPUT: [question to answer]
 pub struct InstructionSelector;
 
 impl InstructionSelector {
-    pub fn self_critique() -> FormatInstructions {
-        FormatInstructions {
+    pub fn self_critique() -> BehaviourInstructions {
+        BehaviourInstructions {
             instructions: r#"Format your output like so:
         INITIAL: [initial text]
         CRITIQUE: [critique of initial text]
@@ -32,8 +32,8 @@ impl InstructionSelector {
         }
     }
 
-    pub fn tree_of_thoughts() -> FormatInstructions {
-        FormatInstructions {
+    pub fn tree_of_thoughts() -> BehaviourInstructions {
+        BehaviourInstructions {
             instructions: r#"Format your output like so:
 Imagine three different experts are asked to complete this task.
 All experts will write down 1 step of their thinking, then share it with the group.
