@@ -1,20 +1,20 @@
 use std::fmt::Display;
 
-#[derive(Debug)]
 /// A struct that holds the instructions for formatting the prompt.
 /// The split token is used to mark the beginning of the output
-struct FormatInstructions {
+#[derive(Clone, Debug)]
+pub struct BehaviourInstructions {
     pub instructions: String,
-    output_token: String,
+    pub output_token: String,
 }
 
-impl Display for FormatInstructions {
+impl Display for BehaviourInstructions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.instructions)
     }
 }
 
-impl FormatInstructions {
+impl BehaviourInstructions {
     pub fn new(instructions: &str, output_token: &str) -> Self {
         Self {
             instructions: instructions.to_string(),
