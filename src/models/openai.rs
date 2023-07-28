@@ -21,7 +21,7 @@ pub struct OpenAILanguageModel<'a> {
 
 impl OpenAIChatRequest {
     pub fn new(model: &str, prompt: &Prompt) -> Self {
-        let system_prompt = match &prompt.format_instructions {
+        let system_prompt = match &prompt.behaviour_instructions {
             Some(instructions) => format!("{}{}", instructions, prompt.prefix),
             None => prompt.prefix.clone(),
         };
@@ -84,7 +84,7 @@ impl<'a> LanguageModel for OpenAILanguageModel<'a> {
         let response = self.client.send_chat_request(request);
         let choice = response.get_top_choice();
 
-        if let Some(instructions) = input.format_instructions {
+        if let Some(instructions) = input.behaviour_instructions {
             let split = choice
                 .split(&instructions.output_token)
                 .collect::<Vec<&str>>();

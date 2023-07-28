@@ -30,7 +30,7 @@ enum Mode {
 }
 
 #[derive(Debug, Clone, Parser, ValueEnum)]
-enum FormatInstruction {
+enum Behaviour {
     TOT,
     SelfCritique,
 }
@@ -44,7 +44,7 @@ struct Cli {
     #[clap(short, long, default_value = "0.7")]
     temperature: f32,
     #[clap(short, long)]
-    format_instructions: Option<FormatInstruction>,
+    behaviour_instructions: Option<Behaviour>,
 
     #[clap(subcommand)]
     task_type: Mode,
@@ -59,9 +59,9 @@ fn main() {
     let language_model = OpenAILanguageModel::new(&client, command.model.parse().unwrap());
     println!("Using model: {}", command.model);
 
-    let formatter = match command.format_instructions {
-        Some(FormatInstruction::TOT) => Some(InstructionSelector::tree_of_thoughts()),
-        Some(FormatInstruction::SelfCritique) => Some(InstructionSelector::self_critique()),
+    let formatter = match command.behaviour_instructions {
+        Some(Behaviour::TOT) => Some(InstructionSelector::tree_of_thoughts()),
+        Some(Behaviour::SelfCritique) => Some(InstructionSelector::self_critique()),
         None => None,
     };
     println!("Using formatter: {:?}", formatter);
@@ -83,12 +83,12 @@ fn process_task<'a, T: LanguageModel>(
     model: &'a T,
     prompt: &'a str,
     task: &'a str,
-    format_instructions: &Option<BehaviourInstructions>,
+    behaviour_instructions: &Option<BehaviourInstructions>,
 ) -> String {
     let mut prompt_builder = Prompt::new().with_prefix(prompt).with_task(task);
 
-    if let Some(instructions) = format_instructions {
-        prompt_builder = prompt_builder.with_format_instructions(instructions);
+    if let Some(instructions) = behaviour_instructions {
+        prompt_builder = prompt_builder.with_behaviour_instructions(instructions);
     }
 
     let final_prompt = prompt_builder.build().unwrap();
