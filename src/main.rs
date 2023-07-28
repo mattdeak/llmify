@@ -63,7 +63,6 @@ fn main() {
     let api_key = std::env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY not set");
     let client = OpenAIClient::new(&api_key);
     let language_model = OpenAILanguageModel::new(&client, command.model.parse().unwrap());
-    println!("Using model: {}", command.model);
 
     let formatter = match command.behaviour_instructions {
         Some(Behaviour::TOT) => Some(InstructionSelector::tree_of_thoughts()),

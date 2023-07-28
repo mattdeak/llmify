@@ -47,10 +47,10 @@ Imagine three different experts are asked to complete this task.
 All experts will write down 1 step of their thinking, then share it with the group.
 Then all experts will go on to the next step, etc.
 If any expert realises they're wrong at any point then they leave.
-If the experts all agree, then you're done.
-When you're done, write "FINAL: [your final answer]"
-    "#
-            .to_string(),
+If all remaining experts agree, then you're done.
+When you're done, write the final answer as:
+"FINAL: [your final answer]""#
+                .to_string(),
             output_token: "FINAL: ".to_string(),
         }
     }
