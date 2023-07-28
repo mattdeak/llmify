@@ -7,7 +7,7 @@ use llmify::{
     prompts::{
         instructions::BehaviourInstructions,
         prompt::Prompt,
-        templates::{InstructionSelector, QUERY, SUMMARIZE},
+        templates::{InstructionSelector, ASK_QUESTION, QUERY_DATA, SUMMARIZE},
     },
 };
 
@@ -17,16 +17,22 @@ struct TaskArgs {
 }
 
 #[derive(Debug, Parser, Clone)]
-struct QAArgs {
+struct QueryArgs {
     #[clap(short, long)]
     question: String,
     task: MaybeStdin<String>,
 }
 
+#[derive(Debug, Parser, Clone)]
+struct QuestionArgs {
+    question: String,
+}
+
 #[derive(Debug, Clone, Subcommand)]
 enum Mode {
     Summarize(TaskArgs),
-    Ask(QAArgs),
+    Query(QueryArgs),
+    Ask(QuestionArgs),
 }
 
 #[derive(Debug, Clone, Parser, ValueEnum)]
@@ -68,31 +74,34 @@ fn main() {
 
     match command.task_type {
         Mode::Summarize(sargs) => {
-            let response = process_task(&language_model, SUMMARIZE, &sargs.task, &formatter);
+            let response = process_input(&language_model, SUMMARIZE, &sargs.task, &formatter);
             println!("{}", response);
         }
-        Mode::Ask(qa_args) => {
+        Mode::Query(qa_args) => {
             let task = format!("QUESTION: {}\nINPUT: {}", qa_args.question, qa_args.task);
-            let response = process_task(&language_model, QUERY, &task, &formatter);
+            let response = process_input(&language_model, QUERY_DATA, &task, &formatter);
+            println!("{}", response);
+        }
+        Mode::Ask(q_args) => {
+            let response =
+                process_input(&language_model, ASK_QUESTION, &q_args.question, &formatter);
             println!("{}", response);
         }
     }
 }
 
-fn process_task<'a, T: LanguageModel>(
+fn process_input<'a, T: LanguageModel>(
     model: &'a T,
     prompt: &'a str,
-    task: &'a str,
+    input: &'a str,
     behaviour_instructions: &Option<BehaviourInstructions>,
 ) -> String {
-    let mut prompt_builder = Prompt::new().with_prefix(prompt).with_task(task);
+    let mut prompt_builder = Prompt::new().with_prefix(prompt).with_task(input);
 
     if let Some(instructions) = behaviour_instructions {
         prompt_builder = prompt_builder.with_behaviour_instructions(instructions);
     }
-
     let final_prompt = prompt_builder.build().unwrap();
-    dbg!(&final_prompt);
 
     model.generate(final_prompt).unwrap()
 }

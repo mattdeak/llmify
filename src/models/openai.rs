@@ -22,7 +22,10 @@ pub struct OpenAILanguageModel<'a> {
 impl OpenAIChatRequest {
     pub fn new(model: &str, prompt: &Prompt) -> Self {
         let system_prompt = match &prompt.behaviour_instructions {
-            Some(instructions) => format!("{}{}", instructions, prompt.prefix),
+            Some(instructions) => format!(
+                "{}\n\nFormatting Instructions:{}",
+                prompt.prefix, instructions
+            ),
             None => prompt.prefix.clone(),
         };
 
@@ -94,8 +97,8 @@ impl<'a> LanguageModel for OpenAILanguageModel<'a> {
             }
 
             return Err(GenerationError(format!(
-                "Could not split output with token {}",
-                instructions.output_token
+                "Could not split output with token {}. Raw output: {}",
+                instructions.output_token, &choice
             )));
         }
 

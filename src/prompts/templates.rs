@@ -8,13 +8,21 @@ The text to summarize will be formatted as:
 INPUT: [text to summarize]
 "#;
 
-pub const QUERY: &str = r#"Analyze the input and the user-provided question and answer the question. 
+pub const QUERY_DATA: &str = r#"Analyze the input and the user-provided question and answer the question. 
 If the question is unanswerable based on the content of the input, write "Cannot be answered".
 Be clear and concise. 
 
 The formatting of the input will be:
-QUESTION: [text to analyze]
-INPUT: [question to answer]
+QUESTION: [question to answer]
+INPUT: [text to analyze]
+"#;
+
+pub const ASK_QUESTION: &str = r#"Provide a response to the question that the user asks. 
+Try to answer the question, but if the answer is uncertain make sure to say so.
+Be clear and concise.
+
+The formatting of the input will be:
+QUESTION: [question to answer]
 "#;
 
 pub struct InstructionSelector;
